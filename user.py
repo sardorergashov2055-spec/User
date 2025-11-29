@@ -15,20 +15,21 @@ BOT_TOKEN = "7979757018:AAEj3Y-_Jc3iWLJWmcx86ZbqEhJYo0JFhrc"
 GROUP_ID = -1002757804832
 
 WEBHOOK_URL = "https://user-wve8.onrender.com/hook"
-CARDXABAR_ID = 5894219175     # TO‘G‘RI @CardXabarBot ID !!!
+CARDXABAR_ID = 5894219175      # @CardXabarBot TO‘G‘RI ID
 
 # ----------------------------------------
 # TELETHON USERBOT (SESSION REQUIRED)
 # ----------------------------------------
 client = TelegramClient("userbot", API_ID, API_HASH)
 
-
 @client.on(events.NewMessage(from_users=CARDXABAR_ID))
 async def handler(event):
     text = event.raw_text
 
+    # SUMMA = + 4 950 000.00 UZS
     summa_match = re.search(r"\+ ([\d\s\.,]+) UZS", text)
-    card_match  = re.search(r"\*\*\*(\d{4})", text)
+    # CARD = ***4308
+    card_match = re.search(r"\*\*\*(\d{4})", text)
 
     if not summa_match or not card_match:
         return
@@ -49,7 +50,7 @@ async def handler(event):
 
 
 # ----------------------------------------
-# USERBOT THREAD (ASYNCIO)
+# USERBOT THREAD
 # ----------------------------------------
 def start_userbot():
     loop = asyncio.new_event_loop()
@@ -65,26 +66,50 @@ def start_userbot():
 
 
 # ----------------------------------------
-# FLASK WEBHOOK SERVER
+# UNIVERSAL WEBHOOK (400 BO‘LMAYDI)
 # ----------------------------------------
 app = Flask(__name__)
 
 @app.route("/hook", methods=["POST"])
 def hook():
-    data = request.json.get("data")
+
+    raw = request.data.decode(errors="ignore")
+    js = None
+
+    try:
+        js = request.get_json(silent=True)
+    except:
+        js = None
+
+    print("📥 RAW:", raw)
+    print("📥 JSON:", js)
+
+    data = None
+
+    # JSON format bo‘lsa
+    if js and "data" in js:
+        data = js["data"]
+
+    # Agar oddiy text kelgan bo‘lsa
+    if not data and raw:
+        data = raw
+
     if not data:
-        return "no data", 400
+        print("⚠️ HECH NIMA TOPILMADI, O‘TKAZILDI")
+        return "ok", 200  # 400 EMAS
 
-    print("📥 Webhook qabul qildi:", data)
-
-    requests.post(
-        f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-        json={"chat_id": GROUP_ID, "text": data}
-    )
-
-    print("📤 Guruhga yuborildi:", data)
+    # Guruhga yuborish
+    try:
+        requests.post(
+            f"https://api.telegram.org/bot{ BOT_TOKEN }/sendMessage",
+            json={"chat_id": GROUP_ID, "text": data}
+        )
+        print("📤 Guruhga yuborildi:", data)
+    except Exception as e:
+        print("❌ Guruhga yuborishda xato:", e)
 
     return "ok", 200
+
 
 
 @app.route("/")
@@ -98,7 +123,7 @@ def start_flask():
 
 
 # ----------------------------------------
-# START PARALLEL THREADS
+# START BOTH
 # ----------------------------------------
 if __name__ == "__main__":
     threading.Thread(target=start_userbot).start()
