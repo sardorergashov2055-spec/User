@@ -12,7 +12,7 @@ API_ID = 25545982
 API_HASH = "adf731033d9de2faafbbcdb2bfa519a9"
 BOT_TOKEN = "7979757018:AAEj3Y-_Jc3iWLJWmcx86ZbqEhJYo0JFhrc"
 GROUP_ID = -1002757804832
-WEBHOOK_URL = "https://your-app.onrender.com/hook"
+WEBHOOK_URL = "https://user-wve8.onrender.com/hook"
 CARDXABAR_ID = 915326936
 
 # ----------------------------------------
