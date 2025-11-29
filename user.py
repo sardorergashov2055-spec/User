@@ -15,7 +15,7 @@ BOT_TOKEN = "7979757018:AAEj3Y-_Jc3iWLJWmcx86ZbqEhJYo0JFhrc"
 GROUP_ID = -1002757804832
 
 WEBHOOK_URL = "https://user-wve8.onrender.com/hook"
-CARDXABAR_ID = 915326936      # @CardXabarBot ID
+CARDXABAR_ID = 5894219175     # TO‘G‘RI @CardXabarBot ID !!!
 
 # ----------------------------------------
 # TELETHON USERBOT (SESSION REQUIRED)
@@ -27,25 +27,25 @@ client = TelegramClient("userbot", API_ID, API_HASH)
 async def handler(event):
     text = event.raw_text
 
-    # SUMMA = + 4 950 000.00 UZS
     summa_match = re.search(r"\+ ([\d\s\.,]+) UZS", text)
-    # CARD = ***4308
-    card_match = re.search(r"\*\*\*(\d{4})", text)
+    card_match  = re.search(r"\*\*\*(\d{4})", text)
 
     if not summa_match or not card_match:
         return
 
     summa_raw = summa_match.group(1)
     summa_clean = summa_raw.replace(" ", "").replace(",", "").split(".")[0]
-
     card = card_match.group(1)
 
     payload = f"PAYMENT|{summa_clean}|{card}"
 
+    print("➡️ Webhookga yuborilmoqda:", WEBHOOK_URL, " | Data:", payload)
+
     try:
-        requests.post(WEBHOOK_URL, json={"data": payload}, timeout=3)
-    except:
-        pass
+        res = requests.post(WEBHOOK_URL, json={"data": payload}, timeout=3)
+        print("⬅️ Webhook javobi:", res.status_code)
+    except Exception as e:
+        print("❌ Webhook xato:", e)
 
 
 # ----------------------------------------
@@ -58,7 +58,7 @@ def start_userbot():
     print("Userbot ishga tushdi!")
 
     async def runner():
-        await client.start()                # session bor → input so‘ramaydi!
+        await client.start()
         await client.run_until_disconnected()
 
     loop.run_until_complete(runner())
@@ -75,10 +75,15 @@ def hook():
     if not data:
         return "no data", 400
 
+    print("📥 Webhook qabul qildi:", data)
+
     requests.post(
         f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
         json={"chat_id": GROUP_ID, "text": data}
     )
+
+    print("📤 Guruhga yuborildi:", data)
+
     return "ok", 200
 
 
