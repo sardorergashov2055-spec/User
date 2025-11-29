@@ -10,13 +10,15 @@ from telethon import TelegramClient, events
 # ----------------------------------------
 API_ID = 25545982
 API_HASH = "adf731033d9de2faafbbcdb2bfa519a9"
+
 BOT_TOKEN = "7979757018:AAEj3Y-_Jc3iWLJWmcx86ZbqEhJYo0JFhrc"
 GROUP_ID = -1002757804832
+
 WEBHOOK_URL = "https://user-wve8.onrender.com/hook"
-CARDXABAR_ID = 915326936
+CARDXABAR_ID = 915326936      # @CardXabarBot ID
 
 # ----------------------------------------
-# TELETHON CLIENT
+# TELETHON USERBOT (SESSION REQUIRED)
 # ----------------------------------------
 client = TelegramClient("userbot", API_ID, API_HASH)
 
@@ -25,45 +27,54 @@ client = TelegramClient("userbot", API_ID, API_HASH)
 async def handler(event):
     text = event.raw_text
 
+    # SUMMA = + 4 950 000.00 UZS
     summa_match = re.search(r"\+ ([\d\s\.,]+) UZS", text)
-    card_match  = re.search(r"\*\*\*(\d{4})", text)
+    # CARD = ***4308
+    card_match = re.search(r"\*\*\*(\d{4})", text)
 
-    if summa_match and card_match:
-        summa_raw = summa_match.group(1)
-        summa_clean = summa_raw.replace(" ", "").replace(",", "").split(".")[0]
-        card = card_match.group(1)
-        payload = f"PAYMENT|{summa_clean}|{card}"
+    if not summa_match or not card_match:
+        return
 
-        try:
-            requests.post(WEBHOOK_URL, json={"data": payload})
-        except:
-            pass
+    summa_raw = summa_match.group(1)
+    summa_clean = summa_raw.replace(" ", "").replace(",", "").split(".")[0]
+
+    card = card_match.group(1)
+
+    payload = f"PAYMENT|{summa_clean}|{card}"
+
+    try:
+        requests.post(WEBHOOK_URL, json={"data": payload}, timeout=3)
+    except:
+        pass
 
 
 # ----------------------------------------
-# USERBOT THREAD ISHLATISH
+# USERBOT THREAD (ASYNCIO)
 # ----------------------------------------
 def start_userbot():
-    loop = asyncio.new_event_loop()          # yangi loop
-    asyncio.set_event_loop(loop)             # loopni shu threadga biriktirish
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
     print("Userbot ishga tushdi!")
 
-    loop.run_until_complete(client.start())  # start async
-    loop.run_until_complete(client.run_until_disconnected())  # doimiy ishlaydi
+    async def runner():
+        await client.start()                # session bor → input so‘ramaydi!
+        await client.run_until_disconnected()
+
+    loop.run_until_complete(runner())
 
 
 # ----------------------------------------
-# FLASK WEBHOOK
+# FLASK WEBHOOK SERVER
 # ----------------------------------------
 app = Flask(__name__)
 
 @app.route("/hook", methods=["POST"])
 def hook():
-    data = request.json.get("data", None)
+    data = request.json.get("data")
     if not data:
         return "no data", 400
 
-    # EXACT xabar guruhga
     requests.post(
         f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
         json={"chat_id": GROUP_ID, "text": data}
@@ -78,11 +89,11 @@ def home():
 
 def start_flask():
     print("Webhook server ishga tushdi!")
-    app.run(host="0.0.0.0", port=10000)
+    app.run(host="0.0.0.0", port=8080)
 
 
 # ----------------------------------------
-# IKKALA XIZMATNI BIRGA ISHLATISH
+# START PARALLEL THREADS
 # ----------------------------------------
 if __name__ == "__main__":
     threading.Thread(target=start_userbot).start()
